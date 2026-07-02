@@ -49,7 +49,12 @@ jobs:
       - name: Stage Sidecar Binary
         run: |
           mkdir -p frontend/src-tauri/binaries
-          cp dist_backend/${{ matrix.exec_name }} ${{ matrix.target_path }}
+          if [ "${{ matrix.platform }}" = "macos" ]; then
+            cp dist_backend/${{ matrix.exec_name }} frontend/src-tauri/binaries/poster-resize-backend-x86_64-apple-darwin
+            cp dist_backend/${{ matrix.exec_name }} frontend/src-tauri/binaries/poster-resize-backend-aarch64-apple-darwin
+          else
+            cp dist_backend/${{ matrix.exec_name }} ${{ matrix.target_path }}
+          fi
         shell: bash
 
       - name: Setup Node.js

@@ -22,19 +22,17 @@ python3 -m PyInstaller --onefile --noconsole --name poster-resize-backend --work
 echo "Step 3: Copying backend to Tauri binaries folder..."
 mkdir -p frontend/src-tauri/binaries
 
-# Detect system architecture for sidecar target triple
-ARCH=$(uname -m)
-if [ "$ARCH" = "arm64" ]; then
-    TARGET_TRIPLE="aarch64-apple-darwin"
-else
-    TARGET_TRIPLE="x86_64-apple-darwin"
-fi
+# Copy sidecar to both Intel and Apple Silicon target triples to prevent compile errors
+target_intel="frontend/src-tauri/binaries/poster-resize-backend-x86_64-apple-darwin"
+target_arm="frontend/src-tauri/binaries/poster-resize-backend-aarch64-apple-darwin"
 
-target_binary="frontend/src-tauri/binaries/poster-resize-backend-${TARGET_TRIPLE}"
-cp dist_backend/poster-resize-backend "$target_binary"
-chmod +x "$target_binary"
+cp dist_backend/poster-resize-backend "$target_intel"
+cp dist_backend/poster-resize-backend "$target_arm"
 
-echo "Sidecar binary copied to $target_binary"
+chmod +x "$target_intel"
+chmod +x "$target_arm"
+
+echo "Sidecar binaries copied to both $target_intel and $target_arm"
 
 # 4. Build Frontend UI and Tauri
 echo "Step 4: Compiling frontend UI and building Tauri desktop wrapper..."
