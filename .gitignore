@@ -1,0 +1,26 @@
+# Node.js dependencies and builds
+node_modules/
+dist/
+dist_backend/
+frontend/dist/
+frontend/src-tauri/target/
+
+# Python environments and compilation caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+*.spec
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# App input/output data (except test image)
+output/
+input/*
+!input/test_pattern.png

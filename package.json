@@ -1,0 +1,15 @@
+{
+  "name": "poster-resize-pro-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "backend:api": "python -m uvicorn backend.api:app --host 127.0.0.1 --port 8765",
+    "generate:test-image": "python scripts/generate_test_image.py",
+    "test:pipeline": "python scripts/test_pipeline.py",
+    "build:windows": "powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1",
+    "build:macos": "bash scripts/build-macos.sh",
+    "build:android": "bash scripts/build-android.sh"
+  }
+}
