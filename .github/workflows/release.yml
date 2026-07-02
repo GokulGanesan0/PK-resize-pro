@@ -124,7 +124,7 @@ jobs:
           cd frontend
           npm install
           # Initialize android config if missing
-          npx tauri android init --yes
+          npx tauri android init
           npx tauri android build --apk
 
       - name: Stage Android APK

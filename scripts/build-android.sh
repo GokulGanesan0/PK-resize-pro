@@ -38,7 +38,7 @@ if command -v cargo &> /dev/null; then
     # Initialize Android wrapper if not already done
     if [ ! -d "src-tauri/gen/android" ]; then
         echo "Initializing Android platform configurations..."
-        npx tauri android init --yes
+        npx tauri android init
     fi
     
     # Compile release APK
