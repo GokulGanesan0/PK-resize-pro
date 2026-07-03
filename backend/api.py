@@ -12,13 +12,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.config import OUTPUT_DIR, INPUT_DIR
 from backend.logger import logger
-from backend.main import get_input_files
-from backend.border_remove import remove_white_borders
-from backend.upscale import upscale_image
-from backend.face_restore import restore_faces
-from backend.enhance import enhance_image
-from backend.resize_export import resize_and_fit, save_png_with_300dpi
-from backend.zip_export import create_zip_archive
+from backend.utils import get_input_files
+from backend.batch_process import run_batch_pipeline
 
 app = FastAPI(title="Poster Resize Pro API Server")
 
@@ -72,78 +67,29 @@ def async_pipeline_worker(req: ProcessRequest):
     
     add_server_log("Web Server Pipeline initiated...")
     
+    def progress_tracker(percent, filename):
+        process_status["progress"] = percent
+        process_status["current_file"] = filename
+        add_server_log(f"Processed image: {filename} ({percent}%)")
+
     try:
-        input_files = get_input_files(req.input_path)
-        if not input_files:
-            raise ValueError(f"No valid image files found at: {req.input_path}")
-            
-        total_files = len(input_files)
-        add_server_log(f"Found {total_files} file(s) to process.")
+        res = run_batch_pipeline(
+            input_source=req.input_path,
+            output_dir=req.output_path,
+            size_key=req.size,
+            orientation=req.orientation,
+            scale_mode=req.scale_mode,
+            upscale=req.upscale,
+            enhance=req.enhance,
+            face_restore=req.face_restore,
+            zip_outputs=req.zip_outputs,
+            progress_callback=progress_tracker
+        )
         
-        for idx, file_path in enumerate(input_files, start=1):
-            filename = os.path.basename(file_path)
-            process_status["current_file"] = filename
-            add_server_log(f"Processing image {idx}/{total_files}: {filename}")
-            
-            try:
-                import cv2
-                img = cv2.imread(file_path)
-                if img is None:
-                    raise ValueError(f"Failed to read image: {filename}")
-                    
-                # 1. Border remove
-                img = remove_white_borders(img)
-                
-                # 2. AI Upscale
-                if req.upscale:
-                    img = upscale_image(img, use_ai=True)
-                    
-                # 3. Face restore
-                if req.face_restore:
-                    img = restore_faces(img, use_ai=True)
-                    
-                # 4. Enhance
-                if req.enhance:
-                    img = enhance_image(img)
-                    
-                # 5. Fit & resize
-                img = resize_and_fit(
-                    img,
-                    size_key=req.size,
-                    orientation=req.orientation,
-                    scale_mode=req.scale_mode
-                )
-                
-                # 6. Save PNG
-                out_filename = f"Image_{idx:02d}.png"
-                out_path = os.path.join(req.output_path, out_filename)
-                
-                if save_png_with_300dpi(img, out_path):
-                    process_status["processed"] += 1
-                    process_status["outputs"].append(out_filename)
-                    add_server_log(f"Successfully processed and exported: {out_filename}")
-                else:
-                    raise IOError("Failed to save image file.")
-                    
-            except Exception as e:
-                process_status["failed"] += 1
-                add_server_log(f"Error processing {filename}: {str(e)}")
-                
-            process_status["progress"] = int((idx / total_files) * 100)
-            
-        # 7. Zip outputs
-        if req.zip_outputs and process_status["outputs"]:
-            add_server_log("Compiling zip archive...")
-            zip_filename = "PosterResizePro_Output.zip"
-            zip_path = os.path.join(req.output_path, zip_filename)
-            output_filepaths = [os.path.join(req.output_path, f) for f in process_status["outputs"]]
-            
-            if create_zip_archive(output_filepaths, zip_path):
-                process_status["zip_file"] = zip_filename
-                add_server_log(f"ZIP package created: {zip_filename}")
-            else:
-                add_server_log("Failed to compile ZIP archive.")
-                
+        process_status["processed"] = res["processed"]
+        process_status["failed"] = res["failed"]
+        process_status["outputs"] = res["outputs"]
+        process_status["zip_file"] = res["zip"]
         add_server_log("Web Server Pipeline execution completed!")
         
     except Exception as e:

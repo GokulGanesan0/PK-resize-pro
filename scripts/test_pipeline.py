@@ -8,7 +8,8 @@ import cv2
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.border_remove import remove_white_borders
-from backend.resize_export import resize_and_fit, save_png_with_300dpi
+from backend.resize import resize_and_fit
+from backend.dpi_export import save_image_with_300dpi
 from backend.enhance import enhance_image
 from backend.zip_export import create_zip_archive
 
@@ -75,7 +76,7 @@ def run_tests():
     # --- TEST 4: Save PNG with 300 DPI ---
     print("\n[TEST 4] Testing 300 DPI metadata export...")
     out_file = os.path.join(out_dir, "Image_01.png")
-    save_success = save_png_with_300dpi(resized, out_file)
+    save_success = save_image_with_300dpi(resized, out_file)
     assert save_success, "Failed to save file"
     assert os.path.exists(out_file), "Saved file does not exist"
     

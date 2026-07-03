@@ -56,3 +56,29 @@ def ensure_model_weights(model_path, download_url, allow_download=None):
     except Exception as e:
         logger.error(f"Could not automatically download model: {str(e)}")
         return False
+
+def get_input_files(input_arg):
+    """
+    Resolves the input argument into a list of file paths.
+    Supports a directory path, a single file, or a comma-separated list of files.
+    """
+    files = []
+
+    if "," in input_arg:
+        paths = [p.strip() for p in input_arg.split(",")]
+        for path in paths:
+            if os.path.isfile(path) and is_image_file(path):
+                files.append(os.path.abspath(path))
+        return files
+
+    if os.path.isdir(input_arg):
+        for entry in os.listdir(input_arg):
+            full_path = os.path.join(input_arg, entry)
+            if os.path.isfile(full_path) and is_image_file(full_path):
+                files.append(os.path.abspath(full_path))
+        return sorted(files)
+
+    if os.path.isfile(input_arg) and is_image_file(input_arg):
+        files.append(os.path.abspath(input_arg))
+
+    return files
