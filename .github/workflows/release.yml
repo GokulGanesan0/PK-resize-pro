@@ -128,7 +128,9 @@ jobs:
         run: |
           cd frontend
           npm install
-          # Initialize android config if missing
+          # Dynamically locate pre-installed NDK path to support Tauri compilations
+          export NDK_HOME=$(ls -d $ANDROID_HOME/ndk/* | head -n 1)
+          echo "Using NDK_HOME=$NDK_HOME"
           npx tauri android init
           npx tauri android build --apk
 

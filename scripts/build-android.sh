@@ -27,6 +27,11 @@ fi
 export ANDROID_HOME=${ANDROID_HOME:-"$HOME/Android/Sdk"}
 if [ -d "$ANDROID_HOME" ]; then
     echo "Using Android SDK at $ANDROID_HOME"
+    # Dynamically resolve local NDK directory if available
+    if [ -d "$ANDROID_HOME/ndk" ]; then
+        export NDK_HOME=$(ls -d "$ANDROID_HOME/ndk"/* 2>/dev/null | head -n 1)
+        echo "Using Android NDK at $NDK_HOME"
+    fi
 else
     echo "WARNING: ANDROID_HOME is not set or directory does not exist."
     echo "Please ensure ANDROID_HOME is configured to your Android SDK location."
